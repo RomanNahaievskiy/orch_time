@@ -11,9 +11,18 @@ const modalClose = document.getElementById('modalClose');
 const terminalId = window.localStorage.getItem('terminalId') || createTerminalId();
 
 function createTerminalId() {
-  const value = `terminal-${crypto.randomUUID()}`;
+  const value = `terminal-${createId()}`;
   window.localStorage.setItem('terminalId', value);
   return value;
+}
+
+function createId() {
+  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID();
+  }
+
+  const randomPart = Math.random().toString(36).slice(2);
+  return `${Date.now().toString(36)}-${randomPart}`;
 }
 
 form.addEventListener('submit', async (event) => {
@@ -36,7 +45,7 @@ form.addEventListener('submit', async (event) => {
       body: JSON.stringify({
         employeeCode,
         terminalId,
-        requestId: crypto.randomUUID()
+        requestId: createId()
       })
     });
 

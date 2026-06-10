@@ -1,5 +1,6 @@
-// Відповідає за HTTP API: одну кнопку /api/punch, health-check та чорнові endpoints синхронізації Google Sheets.
+// Відповідає за HTTP API: одну кнопку /api/punch, health-check, перевірку MySQL та чорнові endpoints синхронізації Google Sheets.
 import express from 'express';
+import { pool } from '../db.js';
 import { punch } from '../services/punchService.js';
 import { syncEmployeesFromGoogleSheet } from '../services/employeeSyncService.js';
 import { exportWorkLogToGoogleSheet } from '../services/journalExportService.js';
@@ -11,6 +12,19 @@ apiRouter.get('/health', (req, res) => {
     ok: true,
     service: 'klr-orch-time-terminal'
   });
+});
+
+apiRouter.get('/health/db', async (req, res, next) => {
+  try {
+    const [rows] = await pool.query('SELECT 1 AS db_ok');
+
+    res.json({
+      ok: true,
+      database: rows[0].db_ok === 1 ? 'connected' : 'unknown'
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 apiRouter.post('/punch', async (req, res, next) => {
