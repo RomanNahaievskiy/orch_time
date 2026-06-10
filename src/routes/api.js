@@ -1,7 +1,7 @@
 // Відповідає за HTTP API: одну кнопку /api/punch, health-check, перевірку MySQL та чорнові endpoints синхронізації Google Sheets.
 import express from 'express';
 import { pool } from '../db.js';
-import { punch } from '../services/punchService.js';
+import { punch, scanPunch } from '../services/punchService.js';
 import { syncEmployeesFromGoogleSheet } from '../services/employeeSyncService.js';
 import { exportWorkLogToGoogleSheet } from '../services/journalExportService.js';
 
@@ -32,7 +32,20 @@ apiRouter.post('/punch', async (req, res, next) => {
     const result = await punch({
       employeeCode: req.body.employeeCode,
       terminalId: req.body.terminalId,
-      requestId: req.body.requestId
+      requestId: req.body.requestId,
+      expectedAction: req.body.expectedAction
+    });
+
+    res.status(result.ok ? 200 : 400).json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+apiRouter.post('/scan', async (req, res, next) => {
+  try {
+    const result = await scanPunch({
+      employeeCode: req.body.employeeCode
     });
 
     res.status(result.ok ? 200 : 400).json(result);

@@ -1,4 +1,4 @@
-// Відповідає за поведінку фронтенду: скан коду, один POST /api/punch, показ результату та повернення фокусу в поле.
+// Відповідає за поведінку фронтенду: скан коду, показ дозволеної сервером кнопки, підтвердження дії та повернення фокусу в поле.
 const form = document.getElementById('punchForm');
 const input = document.getElementById('employeeCode');
 const button = document.getElementById('punchButton');
@@ -9,6 +9,7 @@ const modalMessage = document.getElementById('modalMessage');
 const modalClose = document.getElementById('modalClose');
 
 const terminalId = window.localStorage.getItem('terminalId') || createTerminalId();
+let pendingScan = null;
 
 function createTerminalId() {
   const value = `terminal-${createId()}`;
@@ -27,35 +28,20 @@ function createId() {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
+  await scanEmployeeCode();
+});
 
-  const employeeCode = input.value.trim();
-  if (!employeeCode) {
-    showModal('Скануйте код працівника', false);
+button.addEventListener('click', async () => {
+  if (!pendingScan) {
+    await scanEmployeeCode();
     return;
   }
 
-  setBusy(true);
+  await confirmPunch();
+});
 
-  try {
-    const response = await fetch('/api/punch', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        employeeCode,
-        terminalId,
-        requestId: createId()
-      })
-    });
-
-    const result = await response.json();
-    showModal(result.message || 'Дію виконано', Boolean(result.ok));
-  } catch (error) {
-    showModal('Немає звʼязку із сервером', false);
-  } finally {
-    setBusy(false);
-  }
+input.addEventListener('input', () => {
+  clearPendingScan();
 });
 
 modalClose.addEventListener('click', resetTerminal);
@@ -66,10 +52,91 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
-function setBusy(isBusy) {
+async function scanEmployeeCode() {
+  const employeeCode = input.value.trim();
+
+  if (!employeeCode) {
+    showModal('Скануйте код працівника', false);
+    return;
+  }
+
+  setBusy(true, 'Перевіряємо код...');
+
+  try {
+    const result = await postJson('/api/scan', { employeeCode });
+
+    if (result.decision === 'ALLOW') {
+      pendingScan = {
+        employeeCode,
+        action: result.action
+      };
+      button.textContent = result.buttonText || 'ПІДТВЕРДИТИ';
+      button.hidden = false;
+      statusText.textContent = result.message || 'Дію дозволено';
+      button.focus();
+      return;
+    }
+
+    clearPendingScan();
+    showModal(result.message || 'Дію заборонено', false);
+  } catch (error) {
+    clearPendingScan();
+    showModal(error.message || 'Немає звʼязку із сервером', false);
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function confirmPunch() {
+  setBusy(true, 'Записуємо відмітку...');
+
+  try {
+    const result = await postJson('/api/punch', {
+      employeeCode: pendingScan.employeeCode,
+      terminalId,
+      requestId: createId(),
+      expectedAction: pendingScan.action
+    });
+
+    clearPendingScan();
+    showModal(result.message || 'Дію виконано', Boolean(result.ok));
+  } catch (error) {
+    clearPendingScan();
+    showModal(error.message || 'Немає звʼязку із сервером', false);
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function postJson(url, payload) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Запит відхилено');
+  }
+
+  return result;
+}
+
+function setBusy(isBusy, message = 'Готово до сканування') {
   button.disabled = isBusy;
   input.disabled = isBusy;
-  statusText.textContent = isBusy ? 'Записуємо відмітку...' : 'Готово до сканування';
+  statusText.textContent = isBusy ? message : statusText.textContent || message;
+}
+
+function clearPendingScan() {
+  pendingScan = null;
+  button.hidden = true;
+  button.textContent = 'ПІДТВЕРДИТИ';
+  statusText.textContent = 'Готово до сканування';
 }
 
 function showModal(message, ok) {
@@ -88,6 +155,6 @@ function resetTerminal() {
   form.reset();
   input.disabled = false;
   button.disabled = false;
-  statusText.textContent = 'Готово до сканування';
+  clearPendingScan();
   input.focus();
 }
