@@ -128,6 +128,10 @@ input:focus {
   background: rgba(0, 0, 0, 0.65);
 }
 
+.modal[hidden] {
+  display: none;
+}
+
 .modal__box {
   width: min(520px, 100%);
   display: grid;
