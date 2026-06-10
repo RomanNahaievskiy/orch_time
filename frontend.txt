@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+   
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Victor+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+    <title>KLR-BUS terminal</title>
+     <style>
+
+    /*null style*/
+* {
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+*,
+*:before,
+*:after {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+:focus,
+:active {
+    outline: none;
+}
+
+a:focus,
+a:active {
+    outline: none;
+}
+
+nav,
+footer,
+header,
+aside {
+    display: block;
+}
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+    font-size: 100%;
+    line-height: 1;
+    font-size: 14px;
+    -ms-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+
+input,
+button,
+textarea {
+    font-family: inherit;
+}
+
+input::-ms-clear {
+    display: none;
+}
+
+button {
+    cursor: pointer;
+}
+
+button::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+}
+
+a:link,
+a:visited {
+    text-decoration: none;
+}
+
+a {
+    color: inherit;
+    text-decoration: none
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+ul li {
+    list-style: none;
+}
+
+img {
+    vertical-align: top;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-size: inherit;
+}
+
+
+
+body {
+    display: flex;
+    padding: 10px;
+    flex-direction: column;
+    justify-content: space-around;
+    background: #f7f7f7;
+    color: #fff7f0;
+    min-width: 100%;
+    min-height: 100vh;
+    font-family: "Victor Mono";
+    position: relative;
+}
+
+:root {
+    --klr-palette-primary-main-color: #cf2f2a;
+    --modal-background-ok: linear-gradient(56deg, rgba(0, 0, 0, 1) 0%, rgba(35, 35, 47, 1) 50%);
+}
+
+form {
+    position: relative;
+    margin: 0 auto;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    justify-content: space-between;
+    background-color: #23232f;
+    min-width: 70%;
+    height: auto;
+    padding: 6%;
+    border-radius: 12px;
+    font-size: 20px;
+    background: linear-gradient(56deg, rgba(0, 0, 0, 1) 0%, rgba(35, 35, 47, 1) 50%);
+}
+
+form::after {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: -20px;
+    left: 10%;
+    width: 80%;
+    height: 10px;
+    background: #000;
+    border-radius: 50%;
+    box-shadow: 0 0 40px 34px #16161f77, 0 0 30px 20px #141414fa, 0 0 2px 2px, 0 0 9px 2px #121212ff;
+}
+
+#logo-cnt {
+    width: 230px;
+    max-height: 230px;
+    display: flex;
+    gap: 20px;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    cursor: not-allowed;
+}
+
+
+.logo-subtitle {
+    /* text-align: center; */
+    font-family: monospace;
+    color: #cf2f2a;
+    font-size: 46px;
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    position: relative;
+}
+
+.logo-subtitle::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 7px;
+    ;
+    background-color: #cf2f2a;
+    position: absolute;
+    top: -10px;
+    left: 0;
+}
+
+#content-cnt {
+    flex-grow: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+
+#modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #141414a7;
+    z-index: 50;
+    overflow: hidden;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.3s ease 0s;
+}
+
+#modal.active {
+    visibility: visible;
+    opacity: 1;
+    z-index: 50;
+    transition: all 0.3s ease 0s;
+}
+
+#modal div {
+    position: absolute;
+    display: flex;
+    gap: 24px;
+    flex-direction: column;
+    padding: 50px;
+    top: calc(50% - 100px);
+    left: calc(50% - 250px);
+    width: 500px;
+    min-height: 200px;
+    border-radius: 5px;
+    /* background: #cf2f2a; */
+    box-shadow: 0 0 600px 3px #cf2f2a;
+
+}
+
+#modal[data-color='ok'] div {
+    background: #000;
+}
+
+#modal[data-color='err'] div {
+    background: var(--klr-palette-primary-main-color);
+}
+
+
+.input-line {
+    display: flex;
+    min-width: 100%;
+    justify-content: space-between;
+}
+
+
+#input-cnt {
+    min-height: 58px;
+    width: 100%;
+    padding: 12px;
+    background: #16161f;
+    border: 1px solid #777;
+    border-color: #77777777;
+    font-size: 24px;
+    color: #fff7f0;
+}
+
+#input-cnt[data-state="checking"] {
+    background-color: #90909037;
+
+}
+
+
+
+
+#btns-cnt {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    height: 60px;
+}
+
+input {
+    border-radius: 6px 0 0 6px;
+}
+
+button,
+::placeholder {
+    font-family: inherit;
+    border-radius: 6px;
+    outline: none;
+}
+
+button {
+    font-size: 24px;
+    min-height: 58px;
+    min-width: 230px;
+    font-weight: bold;
+    color: #fff7f0;
+    background-color: #23232f;
+    border: 1px solid #77777777;
+
+}
+
+.input-line button#clear-btn {
+    min-width: 60px;
+    border-radius: 0 6px 6px 0;
+    background-color: var(--klr-palette-primary-main-color);
+}
+
+
+
+button:hover,
+#input-ctr:hover {
+    background-color: #161616;
+    border-color: #777777ff;
+    transition: all 0.3s ease 0s;
+    box-shadow: 0 10px 12px 2px #16161f77;
+
+}
+
+.input-line button#clear-btn:hover {
+    box-shadow: -10px 0 30px 1px #f55;
+    /* background-color: #fff; */
+
+}
+
+button:disabled {
+
+    background-color: #77777777;
+    position: relative;
+    color: #baa8a8;
+    cursor: not-allowed;
+
+}
+
+
+
+#start-end-btn {
+    width: 100%;
+    /* flex: 0 1 100%; */
+    position: relative;
+    z-index: 2
+}
+
+
+
+.progress {
+    width: 100%;
+    height: 60px;
+    background: transparent;
+    position: absolute;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    z-index: 1
+}
+
+.progress__bar {
+    height: 100%;
+    width: 0;
+    background: var(--klr-palette-primary-main-color);
+    
+}
+   </style>
+  <body>
+  
+    <form id="form">
+      
+        <div id="logo-cnt">
+            <svg width="100%" height="100%" viewBox="0 0 129 42" fill="#cf2f2a" xmlns="http://www.w3.org/2000/svg" data-testid="main-page-logo">
+            <path d="M32.5084 34.7409L32.5124 34.7187L34.9087 21.1696L48.2084 35.8959L7.48765 37.8949C7.44525 37.8969 7.40488 37.909 7.36652 37.9292L7.0092 38.1291C6.98699 38.1413 6.99506 38.1736 7.02131 38.1736H50.2656H60.0748L41.7443 17.1069L53.316 4.12529L54.0286 0.0747147H47.5079L36.2936 13.1371H36.2916L38.5991 0.0747147H31.1175L25.2166 33.6545L13.5622 34.4885C13.5359 34.4905 13.5097 34.4986 13.4854 34.5107L13.1685 34.6884C13.1544 34.6964 13.1604 34.7187 13.1766 34.7187L32.5084 34.7409Z"></path><path d="M79.7256 6.56452L79.7922 6.26366C76.3866 6.26366 72.8739 6.26366 69.4319 6.26366L69.3854 6.53222L68.9999 8.72712L68.8686 9.4702C72.349 9.4702 75.5044 9.4702 79.0917 9.4702L79.7256 6.56452ZM80.836 11.2996C81.1973 11.2996 81.5567 11.2996 81.918 11.2996C82.3743 11.2996 82.8285 11.2996 83.2847 11.2996C83.3413 11.2996 83.3978 11.2996 83.4785 11.2996C83.3776 10.6615 82.988 9.05827 82.7619 8.13347C82.6831 7.77001 82.5418 7.39443 82.4368 7.19856C82.128 6.61904 81.7121 6.31212 81.0722 6.27577C80.9874 6.27174 80.6603 6.25962 80.5755 6.2576L80.4948 6.66751L79.5742 11.3097C79.5843 11.3077 79.7095 11.2996 80.836 11.2996ZM58.7303 34.7207L58.7909 34.7914H72.5065L72.5186 34.7207L73.9378 26.7589H60.0768L64.7382 0.125198H56.6732L51.9614 26.9406L58.7303 34.7207ZM103.198 41.9637H93.4998H0.147369L0.401734 41.8223C0.423941 41.8102 0.448166 41.8021 0.474411 41.8021L90.2314 38.3412L74.7332 21.1716L74.1134 24.6811H66.1978L67.6856 16.2185H75.0098C75.0098 15.956 75.0219 15.6894 75.0077 15.4249C74.9956 15.1988 75.0299 14.9928 75.0804 14.7969C75.3509 13.7712 76.3926 13.1896 77.3192 13.2441C78.1187 13.2926 78.7586 13.6298 79.1826 14.3224C79.3562 14.6091 79.445 14.9383 79.443 15.2735C79.441 15.5864 79.443 15.8974 79.443 16.2326C79.5823 16.2326 82.5923 16.2326 83.531 16.2346C83.5674 16.2346 83.6037 16.2346 83.64 16.2346C83.9832 16.2366 84.2982 16.0024 84.3749 15.6773C84.4011 15.5683 84.4213 15.4592 84.4435 15.3502C84.6313 14.4839 84.7423 13.6076 84.6171 12.7171C84.5606 12.3173 84.4415 11.9256 84.3406 11.5339C84.068 10.4738 83.7915 9.41366 83.5108 8.35558C83.4462 8.11328 83.3554 7.87702 83.2706 7.6226C83.317 7.61654 83.3554 7.60847 83.3937 7.60847C83.8621 7.60645 84.3325 7.60443 84.8008 7.60847C85.0471 7.61048 85.2228 7.77606 85.4085 7.91135C85.4408 7.93558 85.4468 8.00625 85.4468 8.05674C85.4509 8.28895 85.4448 8.52116 85.4509 8.75135C85.4529 8.83414 85.4024 8.95327 85.568 8.95327C85.7254 8.95327 85.8203 8.88664 85.8284 8.74327C85.8344 8.63828 85.8304 8.53327 85.8304 8.42625C85.8304 8.19 85.8405 7.95174 85.8244 7.71549C85.8183 7.63472 85.7638 7.52972 85.6972 7.48731C85.4791 7.34193 85.247 7.21674 85.0148 7.09154C84.9583 7.06125 84.8836 7.0552 84.817 7.0552C84.2739 7.05318 83.7309 7.05116 83.1898 7.0552C83.0788 7.05722 83.0223 7.01885 82.9779 6.91789C82.9032 6.74424 82.8184 6.5726 82.7195 6.41308C82.4469 5.96885 82.0472 5.70635 81.5244 5.70433C79.1018 5.69626 76.6773 5.70231 74.2547 5.70029C74.2063 5.70029 74.1477 5.67001 74.1134 5.63568C74.0589 5.58116 74.0105 5.51251 73.9782 5.44385C73.7985 5.06424 73.4755 4.94914 73.0879 4.94712C72.9466 4.94712 72.8053 4.94712 72.6639 4.94712C71.6667 4.94712 70.6674 4.94712 69.6701 4.94712L70.518 0.125198H81.5284C83.6461 0.125198 85.4065 0.310966 86.8257 0.674428C87.3586 0.811736 87.8411 0.975294 88.2772 1.16106C88.6365 1.31452 88.9676 1.48212 89.2563 1.67193C90.5705 2.52808 91.3316 3.9476 91.5557 5.91231C91.6021 6.31616 91.6344 6.73616 91.6344 7.18645C91.6344 8.26472 91.5274 9.3551 91.3114 10.4637C90.7421 13.6884 90.0537 16.0165 89.2462 17.4522C89.1533 17.6178 89.0584 17.7672 88.9615 17.9086C88.9454 17.9328 88.9292 17.9631 88.9131 17.9873C88.469 18.6214 87.8774 19.1746 87.1446 19.6552C87.1386 19.6592 87.1325 19.6633 87.1265 19.6673C86.4603 20.1035 85.681 20.477 84.7806 20.79L103.198 41.9637ZM78.8757 15.4835C78.8737 14.5425 78.1611 13.8055 77.2748 13.7853C76.3745 13.7651 75.571 14.488 75.575 15.4411C75.575 16.0892 75.9505 16.6425 76.4956 16.9131C76.7156 17.0221 76.9619 17.0888 77.2244 17.0888C77.4848 17.0888 77.7311 17.0201 77.9531 16.909C78.4922 16.6405 78.8757 16.0953 78.8757 15.4835Z"></path></svg>
+            <p><span class="logo-subtitle">Service</span></p>
+        </div>
+        <div id="content-cnt">
+            <div id="modal">
+              <div> <p>Warning something wrong!</p>
+              <button id="ok-btn">ОК</button></div>
+            </div>
+            <div class="input-line">
+              <input id="input-cnt" type="text" name="employeId" placeholder="Скануйте Ваш код" autocomplete="off" required minlength="1"></input> <button id="clear-btn" type="reset">x</button>
+            </div>  
+
+            <div id="btns-cnt">
+            <div class="progress">
+              <div class="progress__bar" id="progressBar"></div>
+            </div>
+            <button id="start-end-btn" type="button" hidden>Текст дія</button>
+            </div>
+        </div>
+    </form>
+  
+   <script>
+    
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  const AppDOM = {};
+  AppDOM.formEl = document.getElementById("form");
+  AppDOM.inputCntEl = document.getElementById("input-cnt");
+  AppDOM.clearBtnEl = document.getElementById("clear-btn");
+  AppDOM.modal = document.getElementById("modal");
+  AppDOM.actionBtnEl = document.getElementById("start-end-btn");
+
+  let employeId;
+  let shiftType;
+
+  // Модальне вікно
+  function showModal(message = "Йой, щось пішло не так...", bool) {
+    const modal = AppDOM.modal;
+    bool
+      ? ((modal.dataset.color = "ok"), autoCloseModal())
+      : (modal.dataset.color = "err");
+    const messageBox = document.querySelector("#modal div p");
+    const okBtn = document.getElementById("ok-btn");
+    messageBox.textContent = `${message}`;
+    // console.log(messageBox);
+    modal.classList.add("active");
+    okBtn.addEventListener("click", hideModal);
+
+    //========================================================================================================================================================
+    // patch #2
+    function autoCloseModal() {
+      timerCloseModal = setTimeout(hideModal, 2700);
+    }
+  }
+  function hideModal() {
+    const modal = document.getElementById("modal");
+    modal.classList.remove("active");
+    resetForm();
+  }
+
+  // Очищення форми
+  function resetForm() {
+    AppDOM.formEl.reset();
+    AppDOM.inputCntEl.focus();
+    clearBar();
+    hideButton();
+  }
+  // перший автофокус
+  AppDOM.inputCntEl.focus();
+
+  // Отримання значень із рядка вводу коду
+  AppDOM.inputCntEl.addEventListener("change", function (e) {
+    if (e.target.value) {
+      employeId = document.querySelector('input[name="employeId"]').value; // get ID from input
+      // тут виклик функції бекенду
+      google.script.run
+        .withSuccessHandler((res) => showButton(res, employeId))
+        .request(employeId);
+
+      fillBar();
+    }
+  });
+
+  
+  AppDOM.formEl.addEventListener("reset", function (event) {
+    resetForm();
+
+    // console.log(shiftType, employeId)
+  });
+
+  // фронт показує тільки ті кнопки, які дозволені (або одразу одну “Вхід”/“Вихід”).
+  function showButton(res , employeId) {
+    clearBar();
+   //res.action; //"addNewEntry" || "closeShift"
+
+    if (res.action) {
+      const textBtn = res.action === "addNewEntry" ? "ПОЧАТИ" : "ЗАКІНЧИТИ";
+      AppDOM.actionBtnEl.hidden=false;
+      AppDOM.actionBtnEl.innerText = textBtn;
+
+      AppDOM.actionBtnEl.onclick = () => {
+        hideButton()
+        fillBar()
+        google.script.run
+          .withSuccessHandler( resp =>{
+            showModal(`${res.name}, ${resp}`,true)
+          })
+          .withFailureHandler( resp => {
+            showModal(`${resp.message} щось пішло не так`,false)
+          })
+          [res.action](employeId, res.entryIndex);}
+    } else {
+      showModal(res.message, false)
+    }
+  }
+
+  function hideButton() {
+    AppDOM.actionBtnEl.hidden = true; // натуральний спосіб
+  }
+
+  //
+  //========================================================================================================================================================
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      // console.log('перехоплено подію ентер фокус спрямовано на радіокнопки')
+      const active = document.activeElement;
+
+      if (active && active.tagName === "INPUT") {
+        //  Викликаємо програмно втрату фокусу
+        active.blur();
+
+        // Якщо onchange не спрацьовує автоматично — запускаємо вручну
+        // active.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    
+    }
+  });
+});
+let loaderInterval; // ← НАЗВА ЛІЧИЛЬНИКА
+function clearBar() {
+  let bar = document.getElementById("progressBar");
+
+  clearInterval(loaderInterval); // ← зупиняє лічильник
+  bar.style.width = "0%"; // скидає стан
+}
+
+function fillBar() {
+  let bar = document.getElementById("progressBar");
+  let val = 0;
+
+  // якщо таймер вже був — зупинити
+  clearInterval(loaderInterval);
+
+  loaderInterval = setInterval(() => {
+    val++;
+    bar.style.width = val + "%";
+
+    if (val >= 100) {
+      clearInterval(loaderInterval);
+    }
+  }, 30);
+}
+
+   </script>
+  </body>
+</html>
+

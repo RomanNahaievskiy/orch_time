@@ -1,0 +1,49 @@
+<!-- Відповідає за HTML-розмітку однокнопкового термінала: поле сканера, кнопка дії та модальне повідомлення. -->
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KLR ОРЧ terminal</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="terminal">
+      <section class="brand" aria-label="KLR Service">
+        <div class="brand__mark">KLR</div>
+        <div class="brand__subtitle">Service</div>
+      </section>
+
+      <form class="panel" id="punchForm" autocomplete="off">
+        <label class="field">
+          <span class="field__label">Код працівника</span>
+          <input
+            id="employeeCode"
+            name="employeeCode"
+            type="text"
+            inputmode="numeric"
+            placeholder="Скануйте Ваш код"
+            required
+            autofocus
+          />
+        </label>
+
+        <button class="action" id="punchButton" type="submit">
+          ВІДМІТИТИ
+        </button>
+
+        <div class="status" id="statusText" role="status" aria-live="polite">
+          Готово до сканування
+        </div>
+      </form>
+    </main>
+
+    <div class="modal" id="modal" hidden>
+      <div class="modal__box" id="modalBox">
+        <p id="modalMessage">Повідомлення</p>
+        <button id="modalClose" type="button">OK</button>
+      </div>
+    </div>
+  </body>
+</html>

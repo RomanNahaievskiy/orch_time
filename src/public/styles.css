@@ -1,0 +1,180 @@
+/* Відповідає за зовнішній вигляд термінала: великий сканерний інтерфейс, кнопку та стани успіху/помилки. */
+:root {
+  --klr-red: #cf2f2a;
+  --ink: #fff7f0;
+  --panel: #20202b;
+  --panel-dark: #111118;
+  --muted: #9f9aa5;
+  --ok: #1f8f5f;
+  --danger: #cf2f2a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Consolas, "Courier New", monospace;
+  background: #f4f4f4;
+  color: var(--ink);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.terminal {
+  min-height: 100vh;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 260px minmax(320px, 760px);
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+
+.brand {
+  color: var(--klr-red);
+  text-transform: uppercase;
+}
+
+.brand__mark {
+  font-size: 72px;
+  font-weight: 900;
+  line-height: 0.9;
+}
+
+.brand__subtitle {
+  margin-top: 16px;
+  border-top: 8px solid currentColor;
+  padding-top: 8px;
+  font-size: 42px;
+  font-style: italic;
+  font-weight: 900;
+}
+
+.panel {
+  width: 100%;
+  display: grid;
+  gap: 18px;
+  padding: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #050507 0%, var(--panel) 70%);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field__label {
+  color: var(--muted);
+  font-size: 16px;
+}
+
+input {
+  width: 100%;
+  min-height: 68px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 6px;
+  padding: 0 18px;
+  background: var(--panel-dark);
+  color: var(--ink);
+  font-size: 28px;
+}
+
+input:focus {
+  border-color: var(--klr-red);
+  box-shadow: 0 0 0 3px rgba(207, 47, 42, 0.25);
+}
+
+.action {
+  min-height: 72px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: var(--klr-red);
+  color: var(--ink);
+  font-size: 28px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.action:disabled {
+  background: #686873;
+  color: #d8d0d0;
+  cursor: wait;
+}
+
+.status {
+  min-height: 24px;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.modal__box {
+  width: min(520px, 100%);
+  display: grid;
+  gap: 24px;
+  padding: 34px;
+  border-radius: 8px;
+  background: #050507;
+  box-shadow: 0 0 120px rgba(207, 47, 42, 0.75);
+}
+
+.modal__box[data-kind="ok"] {
+  box-shadow: 0 0 120px rgba(31, 143, 95, 0.7);
+}
+
+.modal__box p {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.25;
+}
+
+.modal__box button {
+  min-height: 54px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--klr-red);
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .terminal {
+    grid-template-columns: 1fr;
+    align-content: center;
+  }
+
+  .brand__mark {
+    font-size: 52px;
+  }
+
+  .brand__subtitle {
+    width: max-content;
+    font-size: 30px;
+  }
+
+  .panel {
+    padding: 22px;
+  }
+}

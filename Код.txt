@@ -1,0 +1,260 @@
+function doGet(e) {
+  clearUsersCache(); //очищає  кеш
+  return HtmlService.createHtmlOutputFromFile("frontend") // ім'я твого HTML-файлу в проекті
+    .setTitle("Облік робочого часу")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+// Визначення ід цільових таблиць
+let dbId = "1zu5G4q3mlS46FHPQuS0SlNmTwO0G41iuphaEB4ZLK9A"; // Довідник працівників
+let wlId = "1MNMuwMZ6bccCboJRagpV01D-M3_LPGGcgKYjNDwDRv8"; // Журнал обліку
+
+let sheetNamedbId = "Аркуш1"; //
+let sheetNamewlId = "Аркуш1"; //
+let usersData = getUsersCached(); // кеш з довідника працівників
+let journalSheet = getJournal(); //Таблиця Журнал обліку
+let timeLimit = 17; // часовий ліміт зміни
+
+// Онлайн Кеш з Довідника працівників
+// ====================================================
+function getUsersCached() {
+  const cache = CacheService.getScriptCache();
+  const cached = cache.get("UsersDB");
+  if (cached) {
+    Logger.log("Отримано з кешу");
+    // Logger.log(cached)
+    return JSON.parse(cached);
+  }
+
+  // Якщо в кеші нема — читаємо з таблиці
+  const data = SpreadsheetApp.openById(dbId)
+    .getSheetByName(sheetNamedbId)
+    .getDataRange()
+    .getValues();
+
+  // Конвертуємо масив у об’єкт із UID як ключем
+  const dataObj = {};
+
+  //
+  for (let i = 1; i < data.length; i++) {
+    const [uid, name, prewStatus, timestamp, entryIndex] = data[i];
+    if (uid) {
+      dataObj[uid] = { name, prewStatus, timestamp, entryIndex };
+    }
+  }
+
+  // Зберігаємо в кеш на 6 годин (макс. 21600 секунд)
+  cache.put("UsersDB", JSON.stringify(dataObj), 21600);
+
+  Logger.log("Отримано з таблиці і кешовано");
+  return dataObj;
+}
+//Очистити  Кеш з Довідника працівників
+function clearUsersCache() {
+  const cache = CacheService.getScriptCache();
+  cache.remove("UsersDB");
+  Logger.log("Кеш користувачів очищено");
+}
+
+// Оновити інформацію про працівника у кеші
+function updateUserInCache(uid, patch) {
+  const cache = CacheService.getScriptCache();
+  const cached = cache.get("UsersDB");
+
+  let users = {};
+  if (cached) users = JSON.parse(cached);
+
+  const current = users[uid];
+  users[uid] = { ...current, ...patch };
+
+  cache.put("UsersDB", JSON.stringify(users), 21600); // 6 год
+  // Logger.log(`🔄 Оновлено кеш користувача ${uid}`);
+}
+
+function checkUserId(uid , retry = false) {
+  // Отримуємо актуальні дані (можливо з кешу)
+  usersData = getUsersCached();
+
+  const user = usersData[uid];
+  if (user) {
+    // Logger.log(`✅ Знайдено користувача: ${JSON.stringify(user.name)}`);
+    return JSON.stringify(user);
+  }
+
+  // Якщо користувача не знайшли і ще не пробували оновити кеш
+  if (!retry) {
+    // Logger.log(`⚠️ Не знайдено ${uid} у кеші. Оновлюю кеш і повторюю...`);
+    clearUsersCache();
+    return checkUserId(uid, true); // рекурсія з прапорцем retry = true
+  }
+
+  // Якщо навіть після оновлення кешу не знайдено
+  throw new Error(`❌ Користувача ${uid} не зареєстровано в системі`);
+}
+
+// [0]  [1]   [2]       [3]           [4]
+// [id]	[імя]	[Статус]	[Мітка часу]	[номер останнього запису в журналі]
+function updateUserInUsersDB(uid, patch) {
+  const db = SpreadsheetApp.openById(dbId);
+  const values = db.getSheetByName(sheetNamedbId).getDataRange().getValues();
+  // Logger.log(values);
+
+  // const index = values.findIndex((row) => row[0] === uid);
+  const index = values.findIndex(row => String(row[0]) === String(uid));
+  const range = db.getSheetByName(sheetNamedbId).getRange(index + 1, 3, 1, 3); // [Статус]	[Мітка часу]	[номер ост запису в журналі]
+  const updateRow = [[patch.prewStatus, patch.timestamp, patch.entryIndex]];
+  range.setValues(updateRow);
+}
+
+// Повертає аркуш 1 таблиці
+function getJournal() {
+  try {
+    let ss = SpreadsheetApp.openById(wlId).getSheetByName(sheetNamewlId);
+    if (!ss) {
+      throw new Error(`Аркуш ${sheetNamewlId} не знайдено`);
+    } else {
+      return ss;
+    }
+  } catch (err) {
+    Logger.log(`getJournal() filed: ${err.name} : ${err.message}`);
+    return null;
+  }
+}
+// 1 визначити індекс запису в журналі
+function findJournalEntryIndex(uid, journalValues = journalSheet.getDataRange().getValues()) {
+  let index;
+  for (let i = journalValues.length - 1; i >= 0; i--) {
+    if (journalValues[i][0].includes(uid)) {
+      // Logger.log(journalValues[i][0].includes(uid))
+      index = i;
+    }
+  }
+  // Logger.log(index)
+  if (index) {
+    return index;
+  } else {
+    throw new Error("findJournalEntryIndex() : not found");
+  }
+}
+
+
+const status = {
+  start: "Працює",
+  end: "Завершено",
+  overtime: "Наднорма",
+  pending: "Не закрита",
+};
+const actionType = {
+  start: "Початок зміни",
+  end: "Кінець зміни",
+};
+
+// ======== Почати зміну ===========
+function addNewEntry(uid="123", index = null) {
+  const time = new Date();
+  const user = usersData[uid];
+  // Logger.log(user);
+
+  journalSheet.appendRow([uid, user.name, time, "---", "---", status.start]);
+
+  // отримати номер запису
+  const newRowIndex = journalSheet.getLastRow();
+
+  //Оновити статус в Довіднику і в кеші
+  const patch = {
+    prewStatus: status.start,
+    timestamp: time,
+    entryIndex: newRowIndex,
+  };
+  updateUserInCache(uid, patch);
+  updateUserInUsersDB(uid, patch);
+
+  // Форматування (виділення зеленим кольором)
+  // const sheet=journalSheet;
+  // const row = sheet.getRange(sheet.getLastRow(), 1, 1, sheet.getLastColumn());
+  // row.setBackground("green").setFontColor("#f4f4f4");
+  return `Розпочато зміну`
+}
+
+//=============Закрити зміну=============
+
+function closeShift(uid="123", entryIndex=4) {
+  const endTime = new Date();
+  entryIndex = Math.floor(entryIndex);
+  let journalValues = journalSheet.getDataRange().getValues();
+
+  // 2 Оновити запис , додати статус, визначити вілпрацьований час
+  // обчислити проміжні значення
+  let totalTime;
+
+  function updateJournalEntry(entryIndex, arr2d) {
+    arr2d[0][1] = (endTime - journalValues[entryIndex - 1][2]) / 86400000;
+    if (arr2d[0][1] > 17 / 24) {
+      arr2d[0][2] = status.overtime;
+    }
+    //Форматування
+    let range = journalSheet.getRange(entryIndex, 4, 1, 3);
+    range.setNumberFormats([["dd.mm  hh:mm:ss", "[h]:mm:ss", "@"]]);
+
+    // let row = journalSheet.getRange(journalEntryIndex + 1, 1, 1,journalSheet.getLastColumn() );
+    // row.setBackground("#343434").setFontColor("#f4f4f4");
+    range.setValues(arr2d);
+    // Logger.log("Func : updateJournalEntry () data was updated");
+
+    // patch.prewStatus, patch.timestamp, patch.entryIndex
+    const patch = {
+      prewStatus: arr2d[0][2],
+      timestamp: endTime,
+      entryIndex: entryIndex,
+    };
+    updateUserInCache(uid, patch);
+    updateUserInUsersDB(uid, patch);
+  }
+
+  let arrVal = [[endTime, totalTime, status.end]];
+
+  updateJournalEntry(entryIndex, arrVal);
+
+  // Logger.log(arrVal);
+
+  const workedMs = endTime - journalValues[entryIndex - 1][2];
+  const hours = Math.floor(workedMs / 3600000);
+  const minutes = Math.round((workedMs % 3600000) / 60000);
+
+  const msg = `Відпрацьовано ${hours} год ${minutes} хв`;
+  return msg;
+  
+ 
+}
+
+
+
+function request(employeId = "59485") {
+  const res = { action: false };
+  try {
+    // Перевірити ід та отримати дані працівника   {uid, name, prewStatus, timestamp, entryIndex} !!!
+    const userData = JSON.parse(checkUserId(employeId));
+    const { name, prewStatus, entryIndex } = userData;
+    // Logger.log(userData);
+    // Logger.log(name);
+    // Logger.log(entryIndex); //? чи викличе пусте значення в фронті чи вже на бекенді  помилку
+    if (
+      prewStatus === status.end ||
+      prewStatus === status.pending ||
+      prewStatus === status.overtime ||
+      prewStatus === ""
+    ) {
+      //"Початок зміни"
+      res.action = "addNewEntry";
+      // Logger.log(res);
+    } else if (prewStatus === status.start || prewStatus === status.pending) {
+      //"Кінець зміни" // Якщо статус останнього запису (Працює/Не закрито) і тип зміни, що вибрав працівник (Кінець зміни) то Закрити зміну
+      res.action = "closeShift";
+      // Logger.log(res);
+    }
+    return { ...res, name, entryIndex };
+  } catch (err) {
+    // Logger.log(`Помилка у request(): ${err.message}`);
+    // Logger.log(res);
+    return { ...res, message: err.message };
+  } // google.script.run[res.action](id, entryIndex) }
+}
