@@ -4,6 +4,7 @@ import { pool } from '../db.js';
 import { punch, scanPunch } from '../services/punchService.js';
 import { syncEmployeesFromGoogleSheet } from '../services/employeeSyncService.js';
 import { exportWorkLogToGoogleSheet } from '../services/journalExportService.js';
+import { buildJournalXls } from '../services/journalDownloadService.js';
 
 export const apiRouter = express.Router();
 
@@ -75,5 +76,18 @@ apiRouter.post('/export/journal', async (req, res, next) => {
       ok: false,
       message: error.message
     });
+  }
+});
+
+apiRouter.get('/download/journal.xls', async (req, res, next) => {
+  try {
+    const xls = await buildJournalXls();
+    const date = new Date().toISOString().slice(0, 10);
+
+    res.setHeader('Content-Type', 'application/vnd.ms-excel; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="orch-journal-${date}.xls"`);
+    res.send(xls);
+  } catch (error) {
+    next(error);
   }
 });
