@@ -69,8 +69,11 @@ apiRouter.post('/sync/employees', async (req, res, next) => {
 apiRouter.post('/export/journal', async (req, res, next) => {
   try {
     const result = await exportWorkLogToGoogleSheet();
-    res.status(result.ok ? 200 : 501).json(result);
+    res.status(200).json(result);
   } catch (error) {
-    next(error);
+    res.status(400).json({
+      ok: false,
+      message: error.message
+    });
   }
 });
