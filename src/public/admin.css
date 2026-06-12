@@ -1,0 +1,189 @@
+/* Відповідає за оформлення адмінської панелі: компактні метрики, таблиця станів і керуючі кнопки. */
+:root {
+  --bg: #f3f4f6;
+  --panel: #ffffff;
+  --ink: #1f2937;
+  --muted: #6b7280;
+  --line: #d7dce3;
+  --red: #cf2f2a;
+  --green: #16835f;
+  --yellow: #a16207;
+  --blue: #1d4ed8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.admin {
+  width: min(1280px, 100%);
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
+
+p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+button,
+.button-link {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 14px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+button:hover,
+.button-link:hover {
+  border-color: var(--blue);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.summary article {
+  min-height: 92px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--panel);
+}
+
+.summary span {
+  display: block;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.summary strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 34px;
+}
+
+.summary .danger strong {
+  color: var(--red);
+}
+
+.table-wrap {
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--line);
+  padding: 12px 14px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  background: #edf0f4;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.badge.on {
+  background: #d1fae5;
+  color: var(--green);
+}
+
+.badge.off {
+  background: #e5e7eb;
+  color: var(--muted);
+}
+
+.badge.warn {
+  background: #fef3c7;
+  color: var(--yellow);
+}
+
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  max-width: 420px;
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: #111827;
+  color: #ffffff;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22);
+}
+
+@media (max-width: 860px) {
+  .topbar {
+    display: grid;
+  }
+
+  .actions {
+    justify-content: flex-start;
+  }
+
+  .summary {
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+  }
+}

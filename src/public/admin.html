@@ -1,0 +1,68 @@
+<!-- Відповідає за адмінську сторінку ОРЧ: перегляд працівників у реальному часі, синхронізація, експорт і завантаження журналу. -->
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ОРЧ Адмін</title>
+    <link rel="stylesheet" href="/admin.css" />
+    <script src="/admin.js" defer></script>
+  </head>
+  <body>
+    <main class="admin">
+      <header class="topbar">
+        <div>
+          <h1>ОРЧ Адмін</h1>
+          <p id="generatedAt">Очікування даних</p>
+        </div>
+        <nav class="actions" aria-label="Адміністративні дії">
+          <button id="refreshButton" type="button">Оновити</button>
+          <button id="syncEmployeesButton" type="button">Синхронізувати працівників</button>
+          <button id="exportJournalButton" type="button">Експорт у Google Sheet</button>
+          <a class="button-link" href="/api/download/journal.xls">Завантажити XLS</a>
+        </nav>
+      </header>
+
+      <section class="summary" aria-label="Зведення">
+        <article>
+          <span>Активних</span>
+          <strong id="totalActive">0</strong>
+        </article>
+        <article>
+          <span>На зміні</span>
+          <strong id="onShift">0</strong>
+        </article>
+        <article>
+          <span>Не на зміні</span>
+          <strong id="offShift">0</strong>
+        </article>
+        <article class="danger">
+          <span>Забули закрити</span>
+          <strong id="forgotToClose">0</strong>
+        </article>
+      </section>
+
+      <section class="table-wrap" aria-label="Стан працівників">
+        <table>
+          <thead>
+            <tr>
+              <th>Статус</th>
+              <th>Код</th>
+              <th>Працівник</th>
+              <th>Підрозділ</th>
+              <th>Початок</th>
+              <th>Тривалість</th>
+            </tr>
+          </thead>
+          <tbody id="employeesTable">
+            <tr>
+              <td colspan="6">Завантаження...</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <div class="toast" id="toast" hidden></div>
+    </main>
+  </body>
+</html>

@@ -5,6 +5,7 @@ import { punch, scanPunch } from '../services/punchService.js';
 import { syncEmployeesFromGoogleSheet } from '../services/employeeSyncService.js';
 import { exportWorkLogToGoogleSheet } from '../services/journalExportService.js';
 import { buildJournalXls } from '../services/journalDownloadService.js';
+import { getAdminStatus } from '../services/adminService.js';
 
 export const apiRouter = express.Router();
 
@@ -76,6 +77,15 @@ apiRouter.post('/export/journal', async (req, res, next) => {
       ok: false,
       message: error.message
     });
+  }
+});
+
+apiRouter.get('/admin/status', async (req, res, next) => {
+  try {
+    const result = await getAdminStatus();
+    res.json(result);
+  } catch (error) {
+    next(error);
   }
 });
 
